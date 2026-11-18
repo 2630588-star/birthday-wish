@@ -1,0 +1,1672 @@
+           <!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraWish — Interactive Birthday Studio</title>
+
+  <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            midnight: '#090B14',
+            obsidian: '#0F1322',
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Base Midnight Canvas & Scrollbar */
+    body {
+      background-color: #090B14;
+      color: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090B14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Ambient Aurora Floating Glows */
+    @keyframes auroraFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(40px, -30px) scale(1.08); }
+      66% { transform: translate(-25px, 25px) scale(0.95); }
+    }
+    @keyframes auroraFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-45px, -20px) scale(1.1); }
+    }
+    @keyframes auroraFloat3 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 35px) scale(1.06); }
+    }
+
+    .aurora-orb-1 { animation: auroraFloat1 16s ease-in-out infinite; }
+    .aurora-orb-2 { animation: auroraFloat2 20s ease-in-out infinite; }
+    .aurora-orb-3 { animation: auroraFloat3 18s ease-in-out infinite; }
+
+    /* Frosted Glassmorphism Surface */
+    .glass-card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.02) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.55);
+    }
+
+    .glass-card-hover {
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgba(244, 63, 94, 0.35);
+      box-shadow: 0 28px 56px -12px rgba(244, 63, 94, 0.14);
+    }
+
+    /* Candle Flame Flicker & Glow */
+    @keyframes flameFlicker {
+      0%, 100% {
+        transform: translateX(-50%) scale(1, 1) rotate(-2deg);
+        filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.95));
+      }
+      25% {
+        transform: translateX(-50%) scale(0.94, 1.06) rotate(2deg);
+        filter: drop-shadow(0 0 16px rgba(245, 158, 11, 1));
+      }
+      50% {
+        transform: translateX(-50%) scale(1.04, 0.95) rotate(-1deg);
+        filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.9));
+      }
+      75% {
+        transform: translateX(-50%) scale(0.97, 1.04) rotate(3deg);
+        filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.95));
+      }
+    }
+
+    .candle-flame {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      width: 14px;
+      height: 24px;
+      background: radial-gradient(ellipse at bottom, #FFFFFF 0%, #FDE047 35%, #F59E0B 75%, rgba(234, 88, 12, 0) 100%);
+      border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+      transform-origin: bottom center;
+      animation: flameFlicker 1.4s infinite ease-in-out;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .candle-flame.blown-out {
+      opacity: 0;
+      transform: translateX(-50%) scale(0.1) translateY(-10px);
+      animation: none;
+      pointer-events: none;
+    }
+
+    /* Rising Smoke Wisp After Blowing Candles */
+    @keyframes smokeRise {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(0) scale(0.6);
+      }
+      25% {
+        opacity: 0.65;
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-35%) translateY(-48px) scale(1.8);
+      }
+    }
+
+    .candle-smoke {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(226, 232, 240, 0.7) 0%, rgba(148, 163, 184, 0) 70%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .candle-smoke.active {
+      animation: smokeRise 2.2s ease-out forwards;
+    }
+
+    /* 3D Interactive Keepsake Envelope */
+    .envelope-stage {
+      perspective: 1200px;
+    }
+
+    .envelope-flap {
+      transform-origin: top center;
+      transition: transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
+    }
+
+    .envelope-open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 5;
+    }
+
+    .envelope-letter {
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+    }
+
+    .envelope-open .envelope-letter {
+      transform: translateY(-28px);
+    }
+
+    .wax-seal {
+      transition: transform 0.45s ease, opacity 0.35s ease;
+    }
+
+    .envelope-open .wax-seal {
+      transform: scale(0.7) translateY(-12px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Progress Bar Shimmer */
+    @keyframes shimmerSlide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .progress-shimmer::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      animation: shimmerSlide 2.4s infinite;
+    }
+
+    /* Masonry Columns for Wish Wall */
+    .masonry-grid {
+      column-count: 1;
+      column-gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+      .masonry-grid {
+        column-count: 2;
+      }
+    }
+    @media (min-width: 1024px) {
+      .masonry-grid {
+        column-count: 3;
+      }
+    }
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 1.25rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-rose-500/30 selection:text-rose-200 relative">
+
+  <!-- Full-Screen Responsive Confetti Canvas -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- Ambient Aurora Background Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+    <div class="aurora-orb-1 absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/20 blur-[120px]"></div>
+    <div class="aurora-orb-2 absolute top-1/3 -right-24 w-[30rem] h-[30rem] rounded-full bg-rose-500/15 blur-[130px]"></div>
+    <div class="aurora-orb-3 absolute -bottom-32 left-1/3 w-[26rem] h-[26rem] rounded-full bg-amber-500/15 blur-[120px]"></div>
+  </div>
+
+  <!-- Toast Notification Container (Replaces alert) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full px-4 sm:px-0 pointer-events-none"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 border-b border-white/10 bg-[#090B14]/75 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-rose-500 to-amber-400 p-[1px] shadow-lg shadow-rose-500/20">
+          <div class="w-full h-full rounded-[11px] bg-[#090B14] flex items-center justify-center group-hover:bg-transparent transition-colors duration-300">
+            <!-- Custom Sparkle SVG Icon -->
+            <svg class="w-5 h-5 text-amber-300 group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L14.2 8.8L21 11L14.2 13.2L12 20L9.8 13.2L3 11L9.8 8.8L12 2Z" fill="currentColor"/>
+              <path d="M19 3L19.8 5.2L22 6L19.8 6.8L19 9L18.2 6.8L16 6L18.2 5.2L19 3Z" fill="currentColor" opacity="0.8"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <span class="font-serif font-bold text-lg tracking-tight bg-gradient-to-r from-white via-rose-100 to-amber-200 bg-clip-text text-transparent">
+            AuraWish
+          </span>
+          <span class="hidden sm:inline-block text-[11px] uppercase tracking-widest text-slate-400 ml-2 border-l border-white/15 pl-2">
+            Birthday Studio
+          </span>
+        </div>
+      </a>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Cloud Sync Status Pill -->
+        <div id="sync-status-pill" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-slate-300">
+          <span id="sync-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="sync-label">Connecting Studio...</span>
+        </div>
+
+        <!-- Sound Toggle Button -->
+        <button
+          id="sound-toggle-btn"
+          type="button"
+          aria-label="Toggle celebration sound"
+          class="p-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-200 transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium"
+        >
+          <svg id="sound-icon-on" class="w-4 h-4 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+          <svg id="sound-icon-off" class="w-4 h-4 text-slate-400 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+          <span id="sound-label" class="hidden sm:inline">Sound On</span>
+        </button>
+
+        <!-- Share Link Button -->
+        <button
+          id="share-btn"
+          type="button"
+          class="p-2.5 sm:px-3.5 sm:py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-200 transition-all active:scale-95 flex items-center gap-1.5 text-xs font-medium"
+        >
+          <svg class="w-4 h-4 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span class="hidden sm:inline">Share</span>
+        </button>
+
+        <!-- Customize Page Modal Trigger -->
+        <button
+          id="open-customizer-btn"
+          type="button"
+          class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-500 hover:opacity-95 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-rose-500/20 transition-all active:scale-95 flex items-center gap-1.5"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <span>Customize Page</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-20 space-y-16">
+
+    <!-- SECTION 1: Hero & Interactive Virtual Candle-Blowing Cake -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+      <!-- Left Editorial & Countdown Column -->
+      <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-400/25 text-rose-200 text-xs font-semibold tracking-wide">
+          <span class="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+          <span id="hero-milestone-badge">22ND ORBIT CELEBRATION</span>
+        </div>
+
+        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12]">
+          Happy Birthday, <br class="hidden sm:block" />
+          <span id="hero-person-name" class="bg-gradient-to-r from-amber-200 via-rose-300 to-indigo-300 bg-clip-text text-transparent">
+            Ayaan!
+          </span>
+        </h1>
+
+        <p id="hero-subtitle" class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+          Another year of bold ideas, late-night laughs, and unforgettable memories. Make a wish, blow out the virtual candles, and explore notes from everyone cheering you on!
+        </p>
+
+        <!-- Countdown Timer & Celebrate Now Toggle -->
+        <div class="glass-card rounded-2xl p-4 sm:p-5 max-w-xl mx-auto lg:mx-0">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span id="countdown-status-text" class="text-xs font-semibold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              ✨ Countdown to Midnight Toast
+            </span>
+            <button
+              id="celebrate-now-btn"
+              type="button"
+              class="text-xs font-semibold px-3 py-1 rounded-lg bg-amber-400/15 hover:bg-amber-400/25 text-amber-200 border border-amber-400/30 transition-all"
+            >
+              🎉 Celebrate Now!
+            </button>
+          </div>
+
+          <div id="countdown-grid" class="grid grid-cols-4 gap-2.5 sm:gap-3">
+            <div class="rounded-xl bg-white/[0.04] border border-white/10 p-2.5 sm:p-3 text-center">
+              <div id="cd-days" class="font-serif text-2xl sm:text-3xl font-bold text-white">00</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">Days</div>
+            </div>
+            <div class="rounded-xl bg-white/[0.04] border border-white/10 p-2.5 sm:p-3 text-center">
+              <div id="cd-hours" class="font-serif text-2xl sm:text-3xl font-bold text-white">00</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">Hours</div>
+            </div>
+            <div class="rounded-xl bg-white/[0.04] border border-white/10 p-2.5 sm:p-3 text-center">
+              <div id="cd-minutes" class="font-serif text-2xl sm:text-3xl font-bold text-white">00</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">Mins</div>
+            </div>
+            <div class="rounded-xl bg-white/[0.04] border border-white/10 p-2.5 sm:p-3 text-center">
+              <div id="cd-seconds" class="font-serif text-2xl sm:text-3xl font-bold text-rose-300">00</div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-400 mt-0.5">Secs</div>
+            </div>
+          </div>
+
+          <div id="celebrate-banner" class="hidden py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-500/20 via-rose-500/20 to-amber-500/20 border border-amber-300/30 text-center">
+            <p class="font-serif text-lg sm:text-xl font-bold text-amber-200">
+              🥂 It's Official — Let the Celebration Begin!
+            </p>
+            <p class="text-xs text-slate-300 mt-1">Blow out the candles on the cake and leave your birthday wish below.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Interactive Virtual Birthday Cake Card -->
+      <div class="lg:col-span-5">
+        <div class="glass-card rounded-3xl p-6 sm:p-8 relative overflow-hidden text-center">
+          <!-- Subtle Radial Stage Spotlight -->
+          <div id="cake-glow" class="absolute top-12 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full bg-amber-400/20 blur-3xl pointer-events-none transition-opacity duration-700"></div>
+
+          <div class="relative z-10">
+            <span class="inline-block text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+              Interactive Wish Studio
+            </span>
+            <h2 id="cake-title" class="font-serif text-xl sm:text-2xl font-bold text-white">
+              Close Your Eyes & Make a Wish
+            </h2>
+
+            <!-- Custom Multi-Tier Glowing CSS Cake -->
+            <div class="mt-12 mb-6 flex flex-col items-center justify-end select-none">
+              <!-- Candles Row -->
+              <div class="flex items-end justify-center gap-7 mb-[-4px] z-20">
+                <!-- Candle 1 -->
+                <div class="relative w-3 h-11 rounded-t-md bg-gradient-to-b from-rose-300 via-rose-400 to-rose-600 shadow-md">
+                  <div class="w-[2px] h-2 bg-slate-800 mx-auto -mt-2"></div>
+                  <div class="candle-flame" style="animation-delay: 0s;"></div>
+                  <div class="candle-smoke"></div>
+                </div>
+                <!-- Candle 2 (Center Taller) -->
+                <div class="relative w-3.5 h-14 rounded-t-md bg-gradient-to-b from-amber-200 via-amber-400 to-amber-600 shadow-md">
+                  <div class="w-[2px] h-2 bg-slate-800 mx-auto -mt-2"></div>
+                  <div class="candle-flame" style="animation-delay: 0.35s;"></div>
+                  <div class="candle-smoke" style="animation-delay: 0.15s;"></div>
+                </div>
+                <!-- Candle 3 -->
+                <div class="relative w-3 h-11 rounded-t-md bg-gradient-to-b from-indigo-300 via-indigo-400 to-indigo-600 shadow-md">
+                  <div class="w-[2px] h-2 bg-slate-800 mx-auto -mt-2"></div>
+                  <div class="candle-flame" style="animation-delay: 0.7s;"></div>
+                  <div class="candle-smoke" style="animation-delay: 0.25s;"></div>
+                </div>
+              </div>
+
+              <!-- Top Tier -->
+              <div class="relative w-36 h-14 rounded-t-2xl bg-gradient-to-b from-[#2A1D3D] to-[#1C142B] border-t-4 border-rose-300 shadow-lg z-10 flex items-center justify-center overflow-hidden">
+                <!-- Frosting Drips -->
+                <div class="absolute top-0 inset-x-0 flex justify-around">
+                  <span class="w-4 h-3.5 rounded-b-full bg-rose-300"></span>
+                  <span class="w-5 h-5 rounded-b-full bg-rose-300"></span>
+                  <span class="w-4 h-3 rounded-b-full bg-rose-300"></span>
+                  <span class="w-5 h-4.5 rounded-b-full bg-rose-300"></span>
+                  <span class="w-4 h-3.5 rounded-b-full bg-rose-300"></span>
+                </div>
+                <span class="text-[11px] font-serif italic text-amber-200/90 mt-3 tracking-wide">Make a Wish</span>
+              </div>
+
+              <!-- Middle Tier -->
+              <div class="relative w-52 h-16 rounded-t-2xl bg-gradient-to-b from-[#231934] to-[#151022] border-t-4 border-amber-300 shadow-xl flex items-center justify-center overflow-hidden">
+                <div class="absolute top-0 inset-x-0 flex justify-around">
+                  <span class="w-5 h-4 rounded-b-full bg-amber-300"></span>
+                  <span class="w-6 h-6 rounded-b-full bg-amber-300"></span>
+                  <span class="w-5 h-3.5 rounded-b-full bg-amber-300"></span>
+                  <span class="w-6 h-5 rounded-b-full bg-amber-300"></span>
+                  <span class="w-5 h-4 rounded-b-full bg-amber-300"></span>
+                  <span class="w-5 h-3.5 rounded-b-full bg-amber-300"></span>
+                </div>
+                <!-- Decorative Gold Dots -->
+                <div class="flex gap-3 mt-4">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-300/80"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400/80"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-300/80"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400/80"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-300/80"></span>
+                </div>
+              </div>
+
+              <!-- Luxury Glass Cake Stand -->
+              <div class="w-64 h-3 rounded-full bg-gradient-to-r from-white/10 via-amber-200/40 to-white/10 border border-white/20 shadow-2xl"></div>
+              <div class="w-24 h-3 bg-gradient-to-b from-white/15 to-transparent rounded-b-xl"></div>
+            </div>
+
+            <!-- Cake Action Buttons -->
+            <div class="space-y-2.5">
+              <button
+                id="blow-candles-btn"
+                type="button"
+                class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-indigo-500 hover:brightness-110 text-white font-bold text-sm shadow-xl shadow-rose-500/25 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>🌬️ Make a Wish & Blow Candles</span>
+              </button>
+
+              <button
+                id="relight-candles-btn"
+                type="button"
+                class="hidden w-full py-3 px-5 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-amber-200 font-semibold text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>🕯️ Relight Candles</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Interactive 3D-Style Keepsake Envelope & Surprise Fund -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+      <!-- Left: 3D Wax-Sealed Keepsake Envelope -->
+      <div class="lg:col-span-7 flex flex-col">
+        <div class="glass-card rounded-3xl p-6 sm:p-8 flex-1 flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-6">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-widest text-rose-300">Personal Keepsake</span>
+              <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-0.5">A Sealed Birthday Letter</h2>
+            </div>
+            <button
+              id="toggle-envelope-btn"
+              type="button"
+              class="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-xs font-semibold text-slate-200 transition-all"
+            >
+              Open Envelope
+            </button>
+          </div>
+
+          <!-- Interactive 3D Envelope Stage -->
+          <div
+            id="envelope-wrapper"
+            role="button"
+            tabindex="0"
+            aria-label="Open or close birthday keepsake envelope"
+            class="envelope-stage relative mx-auto w-full max-w-xl my-auto cursor-pointer select-none group"
+          >
+            <div class="relative rounded-2xl bg-gradient-to-br from-[#191D32] via-[#131729] to-[#0E1120] border border-amber-300/25 shadow-2xl overflow-hidden min-h-[250px] sm:min-h-[270px] flex flex-col justify-end p-5 sm:p-7">
+              <!-- Top Triangular Envelope Flap -->
+              <div
+                class="envelope-flap absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#232844] to-[#181C31] border-b border-amber-300/20 z-20"
+                style="clip-path: polygon(0 0, 100% 0, 50% 100%);"
+              ></div>
+
+              <!-- Wax Seal Emblem -->
+              <div class="wax-seal absolute top-20 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 via-rose-600 to-amber-600 border-2 border-amber-200/70 shadow-xl shadow-rose-600/40 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span id="wax-seal-initial" class="font-serif font-extrabold text-xl text-amber-100">A</span>
+                </div>
+                <span class="mt-2 text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-black/50 text-amber-200/90 border border-white/10">
+                  Tap Seal to Open
+                </span>
+              </div>
+
+              <!-- Keepsake Letter Sheet Inside -->
+              <div class="envelope-letter relative z-10 rounded-xl bg-gradient-to-b from-[#FFFDF9] to-[#F5EFE6] text-slate-800 p-5 sm:p-6 shadow-xl border border-amber-200/80">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-3">
+                  <span class="font-serif italic font-bold text-rose-700 text-sm sm:text-base">
+                    Dearest <span id="letter-recipient-name">Ayaan</span>,
+                  </span>
+                  <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    Keepsake Note
+                  </span>
+                </div>
+                <p id="letter-body-text" class="text-slate-700 text-sm sm:text-[15px] leading-relaxed whitespace-pre-line">
+                  Happy Birthday! Watching you grow, chase ambitious goals, and bring warmth to everyone around you has been an absolute privilege. May this new chapter bring bold adventures, good health, and endless reasons to celebrate.
+                </p>
+                <div class="mt-4 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
+                  <span class="font-serif italic font-semibold text-slate-600">
+                    With love, <span id="letter-sender-name">Your Squad & Friends</span>
+                  </span>
+                  <span class="text-rose-600 font-semibold">✦ AuraWish</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Birthday Surprise & Treat Fund Tracker -->
+      <div class="lg:col-span-5 flex flex-col">
+        <div class="glass-card rounded-3xl p-6 sm:p-8 flex-1 flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute -right-12 -top-12 w-40 h-40 rounded-full bg-amber-400/10 blur-2xl pointer-events-none"></div>
+
+          <div class="space-y-5 relative z-10">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-widest text-amber-300">Group Gift Pool</span>
+                <h2 class="font-serif text-2xl font-bold text-white mt-0.5">Surprise & Treat Fund</h2>
+              </div>
+              <div class="w-11 h-11 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                <!-- Gift Box SVG -->
+                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                </svg>
+              </div>
+            </div>
+
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Friends are chipping in together for <span id="fund-person-name" class="text-white font-semibold">Ayaan</span>'s birthday surprise gift & dinner treat. Add a contribution when posting your wish below!
+            </p>
+
+            <!-- Fund Progress Metrics -->
+            <div class="rounded-2xl bg-white/[0.04] border border-white/10 p-4 space-y-3">
+              <div class="flex items-baseline justify-between gap-2">
+                <div>
+                  <span class="text-xs text-slate-400 block">Total Raised</span>
+                  <span id="fund-raised-display" class="font-serif text-2xl sm:text-3xl font-extrabold text-amber-300">৳ 10,500</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-xs text-slate-400 block">Goal</span>
+                  <span id="fund-goal-display" class="text-sm font-semibold text-slate-200">৳ 15,000</span>
+                </div>
+              </div>
+
+              <!-- Animated Progress Bar -->
+              <div class="w-full h-3.5 rounded-full bg-white/10 overflow-hidden p-0.5">
+                <div
+                  id="fund-progress-bar"
+                  class="progress-shimmer relative h-full rounded-full bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-400 transition-all duration-700"
+                  style="width: 70%;"
+                ></div>
+              </div>
+
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span id="fund-contributors-count">4 friends chipped in</span>
+                <span id="fund-percentage-text" class="font-semibold text-rose-300">70% Funded</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+            <span class="text-xs text-slate-400">100% goes to the birthday surprise</span>
+            <a
+              href="#post-wish-section"
+              class="px-4 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-200 text-xs font-semibold transition-all"
+            >
+              + Chip In & Wish
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Post a Birthday Wish & Live Masonry Wish Wall -->
+    <section id="post-wish-section" class="space-y-10">
+      <!-- Form Card -->
+      <div class="glass-card rounded-3xl p-6 sm:p-8">
+        <div class="max-w-3xl mx-auto">
+          <div class="text-center mb-7">
+            <span class="text-xs font-semibold uppercase tracking-widest text-indigo-300">Leave Your Mark</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">Sign the Birthday Wall</h2>
+            <p class="text-sm text-slate-400 mt-1">Send a personalized note, pick a virtual gift badge, and optionally contribute to the surprise fund.</p>
+          </div>
+
+          <form id="wish-form" class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Sender Name -->
+              <div>
+                <label for="sender-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                  Your Name *
+                </label>
+                <input
+                  id="sender-name"
+                  type="text"
+                  required
+                  maxlength="40"
+                  placeholder="e.g., Tanvir Hasan"
+                  class="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 focus:border-rose-400 focus:outline-none text-sm text-white placeholder-slate-500 transition-colors"
+                />
+              </div>
+
+              <!-- Optional Contribution -->
+              <div>
+                <label for="fund-amount" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                  Surprise Fund Chip-In (<span id="form-currency-label">৳</span> Optional)
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    id="fund-amount"
+                    type="number"
+                    min="0"
+                    step="50"
+                    placeholder="0"
+                    class="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 focus:border-amber-400 focus:outline-none text-sm text-white placeholder-slate-500 transition-colors"
+                  />
+                  <button type="button" data-chip="500" class="chip-btn px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-amber-400/20 border border-white/10 text-xs font-semibold text-amber-200 transition-colors shrink-0">+500</button>
+                  <button type="button" data-chip="1000" class="chip-btn px-3 py-2 rounded-xl bg-white/[0.05] hover:bg-amber-400/20 border border-white/10 text-xs font-semibold text-amber-200 transition-colors shrink-0">+1000</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Relationship Badge & Virtual Gift Icon Selectors -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Relationship Badge -->
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                  Relationship Badge
+                </span>
+                <div id="relationship-selector" class="flex flex-wrap gap-2">
+                  <button type="button" data-rel="Bestie" class="rel-option active px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-rose-500/20 border-rose-400 text-rose-200">
+                    💖 Bestie
+                  </button>
+                  <button type="button" data-rel="Squad" class="rel-option px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-white/[0.04] border-white/10 text-slate-300 hover:bg-white/[0.08]">
+                    🔥 Squad
+                  </button>
+                  <button type="button" data-rel="Family" class="rel-option px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-white/[0.04] border-white/10 text-slate-300 hover:bg-white/[0.08]">
+                    🏡 Family
+                  </button>
+                  <button type="button" data-rel="Campus Friend" class="rel-option px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-white/[0.04] border-white/10 text-slate-300 hover:bg-white/[0.08]">
+                    🎓 Campus Friend
+                  </button>
+                </div>
+              </div>
+
+              <!-- Virtual Gift Icon Selector -->
+              <div>
+                <span class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                  Attach a Virtual Gift
+                </span>
+                <div id="gift-selector" class="grid grid-cols-5 gap-2">
+                  <button type="button" data-gift="cake" class="gift-option active p-2.5 rounded-xl border border-amber-400 bg-amber-400/20 text-amber-200 flex flex-col items-center gap-1 transition-all" title="Birthday Cake">
+                    <span class="text-lg">🎂</span>
+                    <span class="text-[10px] font-medium">Cake</span>
+                  </button>
+                  <button type="button" data-gift="gift" class="gift-option p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] flex flex-col items-center gap-1 transition-all" title="Gift Box">
+                    <span class="text-lg">🎁</span>
+                    <span class="text-[10px] font-medium">Gift</span>
+                  </button>
+                  <button type="button" data-gift="crown" class="gift-option p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] flex flex-col items-center gap-1 transition-all" title="Royal Crown">
+                    <span class="text-lg">👑</span>
+                    <span class="text-[10px] font-medium">Crown</span>
+                  </button>
+                  <button type="button" data-gift="rocket" class="gift-option p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] flex flex-col items-center gap-1 transition-all" title="Rocket">
+                    <span class="text-lg">🚀</span>
+                    <span class="text-[10px] font-medium">Rocket</span>
+                  </button>
+                  <button type="button" data-gift="coffee" class="gift-option p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] flex flex-col items-center gap-1 transition-all" title="Coffee Treat">
+                    <span class="text-lg">☕</span>
+                    <span class="text-[10px] font-medium">Coffee</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Birthday Wish Message -->
+            <div>
+              <label for="wish-message" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">
+                Your Birthday Wish *
+              </label>
+              <textarea
+                id="wish-message"
+                rows="3"
+                required
+                maxlength="320"
+                placeholder="Write a memorable birthday message, favorite memory, or toast..."
+                class="w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/10 focus:border-rose-400 focus:outline-none text-sm text-white placeholder-slate-500 transition-colors resize-none"
+              ></textarea>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+              <span class="text-xs text-slate-400">Your wish appears immediately on the celebration wall below.</span>
+              <button
+                id="submit-wish-btn"
+                type="submit"
+                class="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-500 hover:brightness-110 text-white font-bold text-sm shadow-lg shadow-rose-500/25 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>✨ Post Birthday Wish</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Live Masonry Wish Wall -->
+      <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
+              <span>Live Celebration Wall</span>
+              <span id="wish-count-badge" class="text-xs font-sans font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30">
+                3 Wishes
+              </span>
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Tap the heart on any card to send extra celebration love.</p>
+          </div>
+
+          <!-- Filter Pills -->
+          <div id="wall-filters" class="flex flex-wrap gap-1.5">
+            <button type="button" data-filter="All" class="filter-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white border border-white/20 transition-all">
+              All
+            </button>
+            <button type="button" data-filter="Bestie" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/10 transition-all">
+              Bestie
+            </button>
+            <button type="button" data-filter="Squad" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/10 transition-all">
+              Squad
+            </button>
+            <button type="button" data-filter="Family" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/10 transition-all">
+              Family
+            </button>
+            <button type="button" data-filter="Campus Friend" class="filter-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/10 transition-all">
+              Campus Friend
+            </button>
+          </div>
+        </div>
+
+        <!-- Masonry Grid Container -->
+        <div id="wishes-masonry" class="masonry-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t border-white/10 py-8 text-center text-xs text-slate-400">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>Crafted with <span class="text-rose-400">♥</span> on <span class="text-slate-200 font-semibold">AuraWish Interactive Birthday Studio</span></p>
+      <p>Ready for GitHub & Vercel Deployment • Real-Time Cloud Sync</p>
+    </div>
+  </footer>
+
+  <!-- Customize Page Modal -->
+  <div id="customizer-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-white/15 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-widest text-amber-300">Studio Settings</span>
+          <h3 class="font-serif text-xl sm:text-2xl font-bold text-white">Customize Celebration Page</h3>
+        </div>
+        <button id="close-customizer-btn" type="button" class="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-slate-300">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="customizer-form" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="cfg-name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Birthday Person's Name</label>
+            <input id="cfg-name" type="text" required maxlength="35" class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none" />
+          </div>
+          <div>
+            <label for="cfg-milestone" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Age / Milestone Badge</label>
+            <input id="cfg-milestone" type="text" required maxlength="35" placeholder="e.g., 22ND ORBIT CELEBRATION" class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="cfg-date" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Target Birthday Date & Time</label>
+            <input id="cfg-date" type="datetime-local" required class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none" />
+          </div>
+          <div>
+            <label for="cfg-goal" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Gift Fund Goal (<span id="modal-curr">৳</span>)</label>
+            <input id="cfg-goal" type="number" min="100" step="100" required class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label for="cfg-subtitle" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Hero Welcome Subtitle</label>
+          <textarea id="cfg-subtitle" rows="2" required maxlength="200" class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none resize-none"></textarea>
+        </div>
+
+        <div>
+          <label for="cfg-sender" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Envelope Letter Signed By</label>
+          <input id="cfg-sender" type="text" required maxlength="45" class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="cfg-letter" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Main Keepsake Envelope Letter</label>
+          <textarea id="cfg-letter" rows="4" required maxlength="600" class="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white focus:border-rose-400 focus:outline-none resize-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+          <button type="button" id="cancel-customizer-btn" class="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs font-semibold text-slate-300">
+            Cancel
+          </button>
+          <button type="submit" id="save-customizer-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 via-rose-500 to-amber-500 text-white text-xs font-bold shadow-lg shadow-rose-500/20">
+            Save & Update Studio
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Logic & Firebase Cloud Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, addDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. STATE & DEFAULT CONFIGURATION
+    // =========================================================================
+    const defaultTargetDate = new Date(Date.now() + 1000 * 60 * 60 * 5 + 1000 * 60 * 24).toISOString().slice(0, 16);
+
+    let celebrationSettings = {
+      personName: "Ayaan",
+      milestone: "22ND ORBIT CELEBRATION",
+      targetDate: defaultTargetDate,
+      subtitle: "Another year of bold ideas, late-night laughs, and unforgettable memories. Make a wish, blow out the virtual candles, and explore notes from everyone cheering you on!",
+      letterSender: "Your Squad & Friends",
+      letterBody: "Happy Birthday! Watching you grow, chase ambitious goals, and bring warmth to everyone around you has been an absolute privilege. May this new chapter bring bold adventures, good health, and endless reasons to celebrate.",
+      fundGoal: 15000,
+      currency: "৳"
+    };
+
+    const starterWishes = [
+      {
+        id: "starter-1",
+        name: "Nusrat Jahan",
+        relationship: "Bestie",
+        gift: "crown",
+        amount: 3500,
+        message: "Happy Birthday to the person who always keeps the whole group energized! Wishing you endless wins, good health, and a treat that we definitely won't let you skip.",
+        likes: 14,
+        createdAt: Date.now() - 1000 * 60 * 180,
+        isStarter: true
+      },
+      {
+        id: "starter-2",
+        name: "Rafiqul Islam",
+        relationship: "Campus Friend",
+        gift: "rocket",
+        amount: 4000,
+        message: "From late-night project sprints to celebrating your big day—keep aiming higher every single year. May this orbit bring your biggest breakthroughs yet!",
+        likes: 11,
+        createdAt: Date.now() - 1000 * 60 * 95,
+        isStarter: true
+      },
+      {
+        id: "starter-3",
+        name: "Sadia & Tariq",
+        relationship: "Family",
+        gift: "cake",
+        amount: 3000,
+        message: "So proud of the kind, creative, and determined person you are becoming. Sending warm hugs, prayers, and extra birthday cake your way!",
+        likes: 19,
+        createdAt: Date.now() - 1000 * 60 * 35,
+        isStarter: true
+      }
+    ];
+
+    let wishesList = [...starterWishes];
+    let activeFilter = "All";
+    let selectedRelationship = "Bestie";
+    let selectedGift = "cake";
+    let celebrateNowMode = false;
+    let candlesBlown = false;
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    // Firebase Runtime Variables
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let isCloudConnected = false;
+
+    const appId = typeof __app_id !== "undefined" ? __app_id : "aurawish-birthday-studio";
+    let firebaseConfig = null;
+    try {
+      if (typeof __firebase_config !== "undefined" && __firebase_config) {
+        firebaseConfig = typeof __firebase_config === "string" ? JSON.parse(__firebase_config) : __firebase_config;
+      }
+    } catch (err) {
+      console.warn("Firebase config parse skipped:", err);
+    }
+
+    // =========================================================================
+    // 2. TOAST NOTIFICATION SYSTEM (NO ALERT/CONFIRM)
+    // =========================================================================
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      const borderClass =
+        type === "success"
+          ? "border-emerald-400/40 bg-[#0F172A]/95 text-emerald-100"
+          : type === "celebrate"
+          ? "border-amber-400/40 bg-[#1A1325]/95 text-amber-100"
+          : "border-white/15 bg-[#0F1322]/95 text-slate-100";
+
+      toast.className = `pointer-events-auto px-4 py-3 rounded-2xl border ${borderClass} backdrop-blur-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center justify-between gap-3 transform translate-y-2 opacity-0 transition-all duration-300`;
+      toast.innerHTML = `<span>${escapeHTML(message)}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-2", "opacity-0");
+      });
+
+      setTimeout(() => {
+        toast.classList.add("translate-y-2", "opacity-0");
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement("div");
+      div.textContent = str ?? "";
+      return div.innerHTML;
+    }
+
+    // =========================================================================
+    // 3. WEB AUDIO API SYNTHESIZED CELEBRATION CHIMES
+    // =========================================================================
+    function playCelebrationChime(mode = "sparkle") {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        const notes =
+          mode === "birthday"
+            ? [523.25, 659.25, 783.99, 1046.5, 1318.51] // C5 E5 G5 C6 E6
+            : mode === "envelope"
+            ? [440, 554.37, 659.25] // A4 C#5 E5
+            : [587.33, 880, 1174.66]; // D5 A5 D6
+
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = idx % 2 === 0 ? "sine" : "triangle";
+          osc.frequency.setValueAtTime(freq, now + idx * 0.085);
+
+          gain.gain.setValueAtTime(0.001, now + idx * 0.085);
+          gain.gain.exponentialRampToValueAtTime(0.09, now + idx * 0.085 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.085 + 0.65);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now + idx * 0.085);
+          osc.stop(now + idx * 0.085 + 0.7);
+        });
+      } catch (e) {
+        // Ignore audio autoplay block until next user interaction
+      }
+    }
+
+    // =========================================================================
+    // 4. RESPONSIVE HTML5 CANVAS CONFETTI ENGINE
+    // =========================================================================
+    const canvas = document.getElementById("confetti-canvas");
+    const ctx = canvas.getContext("2d");
+    let confettiParticles = [];
+    let confettiAnimating = false;
+
+    function resizeConfettiCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resizeConfettiCanvas);
+
+    function launchConfetti(count = 130) {
+      resizeConfettiCanvas();
+      const palette = ["#F59E0B", "#F43F5E", "#6366F1", "#FDE047", "#38BDF8", "#FB7185"];
+      for (let i = 0; i < count; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: -20 - Math.random() * (canvas.height * 0.35),
+          w: 6 + Math.random() * 6,
+          h: 10 + Math.random() * 8,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          vx: (Math.random() - 0.5) * 4.5,
+          vy: 2.5 + Math.random() * 4.2,
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+      if (!confettiAnimating) {
+        confettiAnimating = true;
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiParticles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.04; // gentle gravity
+        p.rotation += p.vRot;
+        if (p.y > canvas.height - 60) {
+          p.opacity -= 0.025;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+
+      confettiParticles = confettiParticles.filter((p) => p.opacity > 0 && p.y < canvas.height + 40);
+
+      if (confettiParticles.length > 0) {
+        requestAnimationFrame(animateConfetti);
+      } else {
+        confettiAnimating = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // =========================================================================
+    // 5. UI RENDERING FUNCTIONS
+    // =========================================================================
+    function renderCelebrationSettings() {
+      const name = celebrationSettings.personName || "Ayaan";
+      document.getElementById("hero-person-name").textContent = `${name}!`;
+      document.getElementById("hero-milestone-badge").textContent = celebrationSettings.milestone || "CELEBRATION STUDIO";
+      document.getElementById("hero-subtitle").textContent = celebrationSettings.subtitle;
+      document.getElementById("letter-recipient-name").textContent = name;
+      document.getElementById("letter-body-text").textContent = celebrationSettings.letterBody;
+      document.getElementById("letter-sender-name").textContent = celebrationSettings.letterSender;
+      document.getElementById("fund-person-name").textContent = name;
+      document.getElementById("wax-seal-initial").textContent = name.trim().charAt(0).toUpperCase() || "A";
+
+      renderFundProgress();
+    }
+
+    function renderFundProgress() {
+      const curr = celebrationSettings.currency || "৳";
+      const goal = Math.max(1, Number(celebrationSettings.fundGoal) || 15000);
+      const totalRaised = wishesList.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      const contributors = wishesList.filter((item) => (Number(item.amount) || 0) > 0).length;
+      const pct = Math.min(100, Math.round((totalRaised / goal) * 100));
+
+      document.getElementById("fund-raised-display").textContent = `${curr} ${totalRaised.toLocaleString()}`;
+      document.getElementById("fund-goal-display").textContent = `${curr} ${goal.toLocaleString()}`;
+      document.getElementById("fund-progress-bar").style.width = `${pct}%`;
+      document.getElementById("fund-contributors-count").textContent = `${contributors} friend${contributors === 1 ? "" : "s"} chipped in`;
+      document.getElementById("fund-percentage-text").textContent = `${pct}% Funded`;
+    }
+
+    function getGiftBadgeInfo(giftKey) {
+      const map = {
+        cake: { emoji: "🎂", label: "Birthday Cake" },
+        gift: { emoji: "🎁", label: "Surprise Gift" },
+        crown: { emoji: "👑", label: "Royal Crown" },
+        rocket: { emoji: "🚀", label: "Big Launch" },
+        coffee: { emoji: "☕", label: "Coffee Treat" }
+      };
+      return map[giftKey] || map.cake;
+    }
+
+    function getRelationshipStyle(rel) {
+      switch (rel) {
+        case "Bestie":
+          return "bg-rose-500/15 text-rose-200 border-rose-400/30";
+        case "Squad":
+          return "bg-amber-500/15 text-amber-200 border-amber-400/30";
+        case "Family":
+          return "bg-indigo-500/15 text-indigo-200 border-indigo-400/30";
+        default:
+          return "bg-emerald-500/15 text-emerald-200 border-emerald-400/30";
+      }
+    }
+
+    function renderWishesWall() {
+      const container = document.getElementById("wishes-masonry");
+      const countBadge = document.getElementById("wish-count-badge");
+
+      const sorted = [...wishesList].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      const filtered = activeFilter === "All" ? sorted : sorted.filter((w) => w.relationship === activeFilter);
+
+      countBadge.textContent = `${wishesList.length} Wish${wishesList.length === 1 ? "" : "es"}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full glass-card rounded-2xl p-8 text-center text-slate-400 text-sm">
+            No wishes in the "${escapeHTML(activeFilter)}" category yet. Be the first to post one above!
+          </div>
+        `;
+        return;
+      }
+
+      const curr = celebrationSettings.currency || "৳";
+      container.innerHTML = filtered
+        .map((wish) => {
+          const giftInfo = getGiftBadgeInfo(wish.gift);
+          const relStyle = getRelationshipStyle(wish.relationship);
+          const amountNum = Number(wish.amount) || 0;
+          const timeLabel = formatRelativeTime(wish.createdAt);
+
+          return `
+            <article class="masonry-item glass-card glass-card-hover rounded-2xl p-5 space-y-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/30 via-rose-500/30 to-amber-500/30 border border-white/15 flex items-center justify-center text-lg shrink-0">
+                    ${giftInfo.emoji}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-white leading-tight">${escapeHTML(wish.name)}</h3>
+                    <span class="inline-block mt-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${relStyle}">
+                      ${escapeHTML(wish.relationship)}
+                    </span>
+                  </div>
+                </div>
+                ${
+                  amountNum > 0
+                    ? `<span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-400/15 text-amber-200 border border-amber-400/30 shrink-0">
+                        +${curr}${amountNum.toLocaleString()}
+                      </span>`
+                    : ""
+                }
+              </div>
+
+              <p class="text-slate-200 text-sm leading-relaxed">
+                "${escapeHTML(wish.message)}"
+              </p>
+
+              <div class="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
+                <span>${giftInfo.label} • ${timeLabel}</span>
+                <button
+                  type="button"
+                  data-like-id="${escapeHTML(wish.id)}"
+                  class="like-wish-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-rose-500/20 border border-white/10 hover:border-rose-400/40 text-slate-200 hover:text-rose-200 font-semibold transition-all active:scale-90"
+                >
+                  <span class="text-rose-400">♥</span>
+                  <span>${Number(wish.likes) || 0}</span>
+                </button>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
+      // Attach Like Handlers
+      container.querySelectorAll(".like-wish-btn").forEach((btn) => {
+        btn.addEventListener("click", () => handleLikeWish(btn.dataset.likeId));
+      });
+    }
+
+    function formatRelativeTime(timestamp) {
+      if (!timestamp) return "Just now";
+      const diffSec = Math.max(1, Math.floor((Date.now() - timestamp) / 1000));
+      if (diffSec < 60) return "Just now";
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      return `${Math.floor(diffHr / 24)}d ago`;
+    }
+
+    // =========================================================================
+    // 6. COUNTDOWN TIMER & CELEBRATE MODE
+    // =========================================================================
+    function updateCountdown() {
+      const grid = document.getElementById("countdown-grid");
+      const banner = document.getElementById("celebrate-banner");
+      const statusText = document.getElementById("countdown-status-text");
+      const toggleBtn = document.getElementById("celebrate-now-btn");
+
+      if (celebrateNowMode) {
+        grid.classList.add("hidden");
+        banner.classList.remove("hidden");
+        statusText.textContent = "🎉 LIVE CELEBRATION MODE";
+        toggleBtn.textContent = "⏱ Show Countdown";
+        return;
+      }
+
+      const targetMs = new Date(celebrationSettings.targetDate).getTime();
+      const diff = targetMs - Date.now();
+
+      if (isNaN(targetMs) || diff <= 0) {
+        grid.classList.add("hidden");
+        banner.classList.remove("hidden");
+        statusText.textContent = "🎂 BIRTHDAY MOMENT ARRIVED";
+        toggleBtn.classList.add("hidden");
+        return;
+      }
+
+      grid.classList.remove("hidden");
+      banner.classList.add("hidden");
+      toggleBtn.classList.remove("hidden");
+      statusText.textContent = "✨ Countdown to Midnight Toast";
+      toggleBtn.textContent = "🎉 Celebrate Now!";
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / 1000 / 60) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+
+      document.getElementById("cd-days").textContent = String(days).padStart(2, "0");
+      document.getElementById("cd-hours").textContent = String(hours).padStart(2, "0");
+      document.getElementById("cd-minutes").textContent = String(mins).padStart(2, "0");
+      document.getElementById("cd-seconds").textContent = String(secs).padStart(2, "0");
+    }
+
+    // =========================================================================
+    // 7. INTERACTIVE CONTROLS (CAKE, ENVELOPE, FORM, MODAL)
+    // =========================================================================
+    function setupInteractiveControls() {
+      // Sound Toggle
+      const soundBtn = document.getElementById("sound-toggle-btn");
+      soundBtn.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        document.getElementById("sound-icon-on").classList.toggle("hidden", !soundEnabled);
+        document.getElementById("sound-icon-off").classList.toggle("hidden", soundEnabled);
+        document.getElementById("sound-label").textContent = soundEnabled ? "Sound On" : "Muted";
+        if (soundEnabled) {
+          playCelebrationChime("sparkle");
+          showToast("Celebration chimes enabled", "info");
+        }
+      });
+
+      // Share Button (Uses document.execCommand('copy') per environment compatibility)
+      document.getElementById("share-btn").addEventListener("click", () => {
+        const tempInput = document.createElement("input");
+        tempInput.value = window.location.href;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand("copy");
+          showToast("Birthday studio link copied to clipboard!", "success");
+        } catch (err) {
+          showToast("Ready to share! Copy the browser URL above.", "info");
+        }
+        document.body.removeChild(tempInput);
+      });
+
+      // Celebrate Now Toggle
+      document.getElementById("celebrate-now-btn").addEventListener("click", () => {
+        celebrateNowMode = !celebrateNowMode;
+        updateCountdown();
+        if (celebrateNowMode) {
+          launchConfetti(140);
+          playCelebrationChime("birthday");
+        }
+      });
+
+      // Blow Candles & Relight Candles
+      const blowBtn = document.getElementById("blow-candles-btn");
+      const relightBtn = document.getElementById("relight-candles-btn");
+      const flames = document.querySelectorAll(".candle-flame");
+      const smokes = document.querySelectorAll(".candle-smoke");
+      const cakeGlow = document.getElementById("cake-glow");
+      const cakeTitle = document.getElementById("cake-title");
+
+      blowBtn.addEventListener("click", () => {
+        if (candlesBlown) return;
+        candlesBlown = true;
+
+        flames.forEach((f) => f.classList.add("blown-out"));
+        smokes.forEach((s) => {
+          s.classList.remove("active");
+          void s.offsetWidth; // trigger reflow
+          s.classList.add("active");
+        });
+
+        cakeGlow.classList.add("opacity-10");
+        cakeTitle.textContent = `Wish Sent to the Stars for ${celebrationSettings.personName}! ✨`;
+        blowBtn.classList.add("hidden");
+        relightBtn.classList.remove("hidden");
+
+        launchConfetti(180);
+        playCelebrationChime("birthday");
+        showToast("Candles blown! May all your birthday wishes come true!", "celebrate");
+      });
+
+      relightBtn.addEventListener("click", () => {
+        candlesBlown = false;
+        flames.forEach((f) => f.classList.remove("blown-out"));
+        smokes.forEach((s) => s.classList.remove("active"));
+        cakeGlow.classList.remove("opacity-10");
+        cakeTitle.textContent = "Close Your Eyes & Make a Wish";
+        relightBtn.classList.add("hidden");
+        blowBtn.classList.remove("hidden");
+        playCelebrationChime("sparkle");
+      });
+
+      // 3D Keepsake Envelope Toggle
+      const envelopeWrapper = document.getElementById("envelope-wrapper");
+      const toggleEnvelopeBtn = document.getElementById("toggle-envelope-btn");
+
+      function toggleEnvelope() {
+        const isOpen = envelopeWrapper.classList.toggle("envelope-open");
+        toggleEnvelopeBtn.textContent = isOpen ? "Fold Envelope" : "Open Envelope";
+        if (isOpen) {
+          playCelebrationChime("envelope");
+        }
+      }
+
+      envelopeWrapper.addEventListener("click", toggleEnvelope);
+      envelopeWrapper.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleEnvelope();
+        }
+      });
+      toggleEnvelopeBtn.addEventListener("click", toggleEnvelope);
+
+      // Quick Chip-In Buttons
+      document.querySelectorAll(".chip-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const input = document.getElementById("fund-amount");
+          const currentVal = Number(input.value) || 0;
+          input.value = currentVal + Number(btn.dataset.chip);
+        });
+      });
+
+      // Relationship Badge Pills
+      document.querySelectorAll(".rel-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".rel-option").forEach((b) => {
+            b.className = "rel-option px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-white/[0.04] border-white/10 text-slate-300 hover:bg-white/[0.08]";
+          });
+          btn.className = "rel-option active px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all bg-rose-500/20 border-rose-400 text-rose-200";
+          selectedRelationship = btn.dataset.rel;
+        });
+      });
+
+      // Virtual Gift Selector
+      document.querySelectorAll(".gift-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".gift-option").forEach((b) => {
+            b.className = "gift-option p-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] flex flex-col items-center gap-1 transition-all";
+          });
+          btn.className = "gift-option active p-2.5 rounded-xl border border-amber-400 bg-amber-400/20 text-amber-200 flex flex-col items-center gap-1 transition-all";
+          selectedGift = btn.dataset.gift;
+        });
+      });
+
+      // Wish Wall Filter Pills
+      document.querySelectorAll(".filter-pill").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".filter-pill").forEach((b) => {
+            b.className = "filter-pill px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.04] text-slate-300 border border-white/10 hover:bg-white/10 transition-all";
+          });
+          btn.className = "filter-pill active px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 text-white border border-white/20 transition-all";
+          activeFilter = btn.dataset.filter;
+          renderWishesWall();
+        });
+      });
+
+      // Submit Birthday Wish Form
+      document.getElementById("wish-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById("sender-name");
+        const messageInput = document.getElementById("wish-message");
+        const amountInput = document.getElementById("fund-amount");
+        const submitBtn = document.getElementById("submit-wish-btn");
+
+        const name = nameInput.value.trim();
+        const message = messageInput.value.trim();
+        const amount = Math.max(0, Number(amountInput.value) || 0);
+
+        if (!name || !message) return;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Posting Wish...";
+
+        const newWish = {
+          name,
+          relationship: selectedRelationship,
+          gift: selectedGift,
+          amount,
+          message,
+          likes: 1,
+          createdAt: Date.now()
+        };
+
+        try {
+          if (isCloudConnected && db && currentUser) {
+            // RULE 1: Strict public data collection path
+            const wishesCol = collection(db, "artifacts", appId, "public", "data", "wishes");
+            await addDoc(wishesCol, newWish);
+          } else {
+            wishesList.unshift({ id: `local-${Date.now()}`, ...newWish });
+            renderWishesWall();
+            renderFundProgress();
+          }
+
+          nameInput.value = "";
+          messageInput.value = "";
+          amountInput.value = "";
+          launchConfetti(90);
+          playCelebrationChime("sparkle");
+          showToast("Your birthday wish is live on the wall!", "success");
+        } catch (err) {
+          console.error("Failed to post wish:", err);
+          showToast("Could not sync wish to cloud—saved locally instead.", "info");
+          wishesList.unshift({ id: `local-${Date.now()}`, ...newWish });
+          renderWishesWall();
+          renderFundProgress();
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = "<span>✨ Post Birthday Wish</span>";
+        }
+      });
+
+      // Customizer Modal Open / Close / Save
+      const modal = document.getElementById("customizer-modal");
+      document.getElementById("open-customizer-btn").addEventListener("click", () => {
+        document.getElementById("cfg-name").value = celebrationSettings.personName;
+        document.getElementById("cfg-milestone").value = celebrationSettings.milestone;
+        document.getElementById("cfg-date").value = celebrationSettings.targetDate;
+        document.getElementById("cfg-goal").value = celebrationSettings.fundGoal;
+        document.getElementById("cfg-subtitle").value = celebrationSettings.subtitle;
+        document.getElementById("cfg-sender").value = celebrationSettings.letterSender;
+        document.getElementById("cfg-letter").value = celebrationSettings.letterBody;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      });
+
+      function closeModal() {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+
+      document.getElementById("close-customizer-btn").addEventListener("click", closeModal);
+      document.getElementById("cancel-customizer-btn").addEventListener("click", closeModal);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.getElementById("customizer-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById("save-customizer-btn");
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+
+        const updated = {
+          personName: document.getElementById("cfg-name").value.trim() || "Ayaan",
+          milestone: document.getElementById("cfg-milestone").value.trim() || "BIRTHDAY CELEBRATION",
+          targetDate: document.getElementById("cfg-date").value || defaultTargetDate,
+          fundGoal: Math.max(100, Number(document.getElementById("cfg-goal").value) || 15000),
+          subtitle: document.getElementById("cfg-subtitle").value.trim(),
+          letterSender: document.getElementById("cfg-sender").value.trim() || "Your Friends",
+          letterBody: document.getElementById("cfg-letter").value.trim(),
+          currency: celebrationSettings.currency || "৳"
+        };
+
+        celebrationSettings = { ...celebrationSettings, ...updated };
+        renderCelebrationSettings();
+        updateCountdown();
+
+        try {
+          if (isCloudConnected && db && currentUser) {
+            // RULE 1: Strict public data document path
+            const settingsDoc = doc(db, "artifacts", appId, "public", "data", "settings", "main");
+            await setDoc(settingsDoc, celebrationSettings, { merge: true });
+          }
+          playCelebrationChime("sparkle");
+          showToast("Celebration page customized & updated!", "success");
+          closeModal();
+        } catch (err) {
+          console.error("Failed to save settings:", err);
+          showToast("Updated locally! Connect Firebase for multi-device sync.", "info");
+          closeModal();
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = "Save & Update Studio";
+        }
+      });
+    }
+
+    async function handleLikeWish(wishId) {
+      const target = wishesList.find((w) => w.id === wishId);
+      if (!target) return;
+
+      const nextLikes = (Number(target.likes) || 0) + 1;
+      target.likes = nextLikes;
+      renderWishesWall();
+      playCelebrationChime("sparkle");
+
+      if (isCloudConnected && db && currentUser && !target.isStarter) {
+        try {
+          const wishDoc = doc(db, "artifacts", appId, "public", "data", "wishes", wishId);
+          await updateDoc(wishDoc, { likes: nextLikes });
+        } catch (err) {
+          console.error("Like update failed:", err);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 8. FIREBASE AUTHENTICATION & REAL-TIME LISTENERS
+    // =========================================================================
+    function updateSyncStatus(connected, label) {
+      const dot = document.getElementById("sync-dot");
+      const text = document.getElementById("sync-label");
+      if (connected) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-indigo-400";
+      }
+      text.textContent = label;
+    }
+
+    async function initFirebaseStudio() {
+      if (!firebaseConfig || !firebaseConfig.apiKey) {
+        updateSyncStatus(false, "Interactive Studio Mode");
+        return;
+      }
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // RULE 3: Authenticate FIRST and await before any Firestore queries
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        }
+
+        if (!currentUser) return;
+        isCloudConnected = true;
+        updateSyncStatus(true, "Live Cloud Sync");
+
+        // Listen to Celebration Settings (RULE 1 Path + Error Callback)
+        const settingsRef = doc(db, "artifacts", appId, "public", "data", "settings", "main");
+        onSnapshot(
+          settingsRef,
+          (snap) => {
+            if (snap.exists()) {
+              celebrationSettings = { ...celebrationSettings, ...snap.data() };
+              renderCelebrationSettings();
+              updateCountdown();
+            }
+          },
+          (error) => {
+            console.error("Settings snapshot error:", error);
+          }
+        );
+
+        // Listen to Wishes Collection (RULE 1 Path, RULE 2 Simple Collection Query, Error Callback)
+        const wishesRef = collection(db, "artifacts", appId, "public", "data", "wishes");
+        onSnapshot(
+          wishesRef,
+          (snapshot) => {
+            const cloudWishes = [];
+            snapshot.forEach((docSnap) => {
+              cloudWishes.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            if (cloudWishes.length > 0) {
+              wishesList = cloudWishes;
+            } else {
+              wishesList = [...starterWishes];
+            }
+            renderWishesWall();
+            renderFundProgress();
+          },
+          (error) => {
+            console.error("Wishes snapshot error:", error);
+            updateSyncStatus(false, "Local Studio Mode");
+          }
+        );
+      } catch (err) {
+        console.error("Firebase init error:", err);
+        updateSyncStatus(false, "Interactive Studio Mode");
+      }
+    }
+
+    // =========================================================================
+    // 9. BOOTSTRAP ON WINDOW LOAD
+    // =========================================================================
+    window.onload = function () {
+      resizeConfettiCanvas();
+      renderCelebrationSettings();
+      renderWishesWall();
+      updateCountdown();
+      setupInteractiveControls();
+      setInterval(updateCountdown, 1000);
+      initFirebaseStudio();
+    };
+  </script>
+</body>
+</html>
